@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/htk-g/Desktop/RougueLike/main'
+relocations:     []
+...
