@@ -132,10 +132,7 @@ int handleInput(int input, Player *user)
         break;
     }
 
-    if (checkPosition(newY, newX, user))
-    {
-        playerMove(newY, newX, user);
-    }
+    checkPosition(newY, newX, user);
 
     return 1;
 }
@@ -158,10 +155,12 @@ int checkPosition(int newY, int newX, Player *unit)
     switch (mvinch(newY, newX)) // mvinch
     {
     case '.':
+        playerMove(newY, newX, unit);
         return 1;
         break;
 
     default:
+        move(unit->yPosition, unit->xPosition);
         return 0;
         break;
     }
