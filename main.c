@@ -17,7 +17,6 @@ Player *playerSetUp();
 int handleInput(int input, Player *user);
 int playerMove(int yPosition, int xPosition, Player *user);
 
-
 int main(int argc, char const *argv[])
 {
 
@@ -32,6 +31,7 @@ int main(int argc, char const *argv[])
     {
         // getch(); // get character
         handleInput(ch, user);
+        
     }
     endwin();
 
@@ -42,7 +42,8 @@ int screenSetUp()
 {
 
     initscr(); // need ncursor installed and working
-    noecho();  // you can't see what you've typed
+    printw("Welcome to the dungeon");
+    noecho(); // you can't see what you've typed
     refresh();
 
     return 1;
@@ -83,9 +84,11 @@ Player *playerSetUp()
     newPlayer->xPosition = 14;
     newPlayer->yPosition = 14;
 
-    mvprintw(newPlayer->yPosition, newPlayer->xPosition, "@");
-    // the end cursor will stop at i + 1 (which is 15)
-    move(newPlayer->yPosition, newPlayer->xPosition); // set back to (cur)
+    playerMove(14, 14, newPlayer);
+
+    // mvprintw(newPlayer->yPosition, newPlayer->xPosition, "@");
+    // // the end cursor will stop at i + 1 (which is 15)
+    // move(newPlayer->yPosition, newPlayer->xPosition); // set back to (cur)
 
     return newPlayer;
 }
