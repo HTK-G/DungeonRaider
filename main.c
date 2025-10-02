@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <ncurses.h> // special header for this gaming project
 #include <stdlib.h>
+#include <time.h> // enable use of random numbers
 
 typedef struct Position
 {
@@ -25,6 +26,7 @@ typedef struct Room
     Position position;
     int height;
     int width;
+    Position doors[4]; // doors are stored as an array os Posision structs
 
     // Monster **monsters; // an array for monsters
     // Item **items;       // an array for items
@@ -132,6 +134,24 @@ Room *createRoom(int y, int x, int height, int width)
     newRoom->height = height;
     newRoom->width = width;
 
+    srand(time(NULL));
+
+    // top door
+    newRoom->doors[0].x = rand() % width + newRoom->position.x; // in range of 0 to width
+    newRoom->doors[0].y = newRoom->position.y;                  // in range of 0 to height
+
+    // bottom door
+    newRoom->doors[1].x = rand() % width + newRoom->position.x;
+    newRoom->doors[1].y = newRoom->position.y + newRoom->height;
+
+    // left door
+    newRoom->doors[2].x = newRoom->position.x;
+    newRoom->doors[2].y = rand() % height + newRoom->position.y;
+
+    // right door
+    newRoom->doors[3].x = newRoom->position.x + newRoom->width;
+    newRoom->doors[3].y = rand() % height + newRoom->position.y;
+
     return newRoom;
 }
 
@@ -157,6 +177,13 @@ int drawRoom(Room *room)
             mvprintw(y, x, ".");
         }
     }
+
+    // Draw Doors
+    mvprintw(room->doors[0].y, room->doors[0].x, "+");
+    mvprintw(room->doors[1].y, room->doors[1].x, "+");
+    mvprintw(room->doors[2].y, room->doors[2].x, "+");
+    mvprintw(room->doors[3].y, room->doors[3].x, "+");
+
     return 1;
 }
 
