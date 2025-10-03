@@ -59,6 +59,7 @@ int main(int argc, char const *argv[])
 
     Player *user;
     int ch;
+    srand(time(NULL));
     screenSetUp();
     mapSetUp();
     user = playerSetUp();
@@ -89,7 +90,7 @@ int screenSetUp()
 Room **mapSetUp()
 {
     Room **rooms;
-    rooms = malloc(sizeof(Room) * 6); // allocate 6 rooms
+    rooms = malloc(sizeof(Room *) * 6); // allocate 6 rooms
 
     // mvprintw(13, 13, "--------");     // (y coordinate, x coordinate, "string")
     // mvprintw(14, 13, "|......|");
@@ -134,7 +135,7 @@ Room *createRoom(int y, int x, int height, int width)
     newRoom->height = height;
     newRoom->width = width;
 
-    srand(time(NULL));
+    // srand(time(NULL));
 
     // top door
     newRoom->doors[0].x = rand() % width + newRoom->position.x; // in range of 0 to width
@@ -149,7 +150,7 @@ Room *createRoom(int y, int x, int height, int width)
     newRoom->doors[2].y = rand() % height + newRoom->position.y;
 
     // right door
-    newRoom->doors[3].x = newRoom->position.x + newRoom->width;
+    newRoom->doors[3].x = newRoom->position.x + newRoom->width - 1;
     newRoom->doors[3].y = rand() % height + newRoom->position.y;
 
     return newRoom;
@@ -207,8 +208,8 @@ Player *playerSetUp()
 
 int handleInput(int input, Player *user)
 {
-    int newY;
-    int newX;
+    int newY = user->position.y;
+    int newX = user->position.x;
 
     switch (input)
     {
