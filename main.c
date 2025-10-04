@@ -26,7 +26,10 @@ typedef struct Room
     Position position;
     int height;
     int width;
-    Position doors[4]; // doors are stored as an array os Posision structs
+
+    // Position doors[4]; // doors are stored as an array os Position structs
+    // 0: top 1: bottom 2: left 3: right
+    Position **doors; // changed to more volatile form
 
     // Monster **monsters; // an array for monsters
     // Item **items;       // an array for items
@@ -51,15 +54,18 @@ Player *playerSetUp();
 int handleInput(int input, Player *user);
 int playerMove(int yPosition, int xPosition, Player *user);
 int checkPosition(int y, int x, Player *unit);
+
+// Room Functions:
 Room *createRoom(int y, int x, int height, int width);
 int drawRoom(Room *room);
+int connectDoors(Position *doorOne, Position *doorTwo);
 
 int main(int argc, char const *argv[])
 {
 
     Player *user;
     int ch;
-    srand(time(NULL));
+
     screenSetUp();
     mapSetUp();
     user = playerSetUp();
@@ -81,6 +87,7 @@ int screenSetUp()
     initscr(); // need ncursor installed and working
     printw("Welcome to the dungeon");
     noecho(); // you can't see what you've typed
+    srand(time(NULL));
     refresh();
 
     return 1;
@@ -122,6 +129,8 @@ Room **mapSetUp()
     rooms[2] = createRoom(10, 40, 6, 12);
     drawRoom(rooms[2]);
 
+    connectDoors(rooms[0]->doors[3], rooms[2]->doors[1]); // need to change
+
     return rooms;
 }
 
@@ -135,25 +144,80 @@ Room *createRoom(int y, int x, int height, int width)
     newRoom->height = height;
     newRoom->width = width;
 
+    newRoom->doors = malloc(sizeof(Position) * 4);
+
     // srand(time(NULL));
 
     // top door
-    newRoom->doors[0].x = rand() % width + newRoom->position.x; // in range of 0 to width
-    newRoom->doors[0].y = newRoom->position.y;                  // in range of 0 to height
+    newRoom->doors[0] = malloc(sizeof(Position));
+    newRoom->doors[0]->x = 1 + rand() % (width - 2) + newRoom->position.x; // in range of 0 to width
+    newRoom->doors[0]->y = newRoom->position.y;                            // in range of 0 to height
 
     // bottom door
-    newRoom->doors[1].x = rand() % width + newRoom->position.x;
-    newRoom->doors[1].y = newRoom->position.y + newRoom->height;
+    newRoom->doors[1] = malloc(sizeof(Position));
+    newRoom->doors[1]->x = 1 + rand() % (width - 2) + newRoom->position.x;
+    newRoom->doors[1]->y = newRoom->position.y + newRoom->height;
 
     // left door
-    newRoom->doors[2].x = newRoom->position.x;
-    newRoom->doors[2].y = rand() % height + newRoom->position.y;
+    newRoom->doors[2] = malloc(sizeof(Position));
+    newRoom->doors[2]->x = newRoom->position.x;
+    newRoom->doors[2]->y = 1 + rand() % (height - 2) + newRoom->position.y;
 
     // right door
-    newRoom->doors[3].x = newRoom->position.x + newRoom->width - 1;
-    newRoom->doors[3].y = rand() % height + newRoom->position.y;
+    newRoom->doors[3] = malloc(sizeof(Position));
+    newRoom->doors[3]->x = newRoom->position.x + newRoom->width - 1;
+    newRoom->doors[3]->y = 1 + rand() % (height - 2) + newRoom->position.y;
 
     return newRoom;
+}
+
+// Rules for door positions -- 0: top 1: bottom 2: left 3: right
+int connectDoors(Position *doorOne, Position *doorTwo)
+{
+    // 1. check if distance is smaller after moved
+    // 2. check for valid position / empty char
+    Position temp;
+
+    temp.x = doorOne->x;
+    temp.y = doorOne->y;
+
+    // use while instead of for loop
+    while (1)
+    {
+        // if (temp.x == doorTwo->x && temp.y == doorTwo->y)
+        // {
+        //     break;
+        // }
+        // Go left, cur x - 1
+        if ((abs((temp.x - 1) - doorTwo->x) < abs((temp.x) - doorTwo->x)) && mvinch(temp.y, temp.x - 1) == ' ')
+        {
+            temp.x = temp.x - 1;
+            mvprintw(temp.y, temp.x, "#");
+        }
+        // Go right
+        else if ((abs((temp.x + 1) - doorTwo->x) < abs((temp.x) - doorTwo->x)) && mvinch(temp.y, temp.x + 1) == ' ')
+        {
+            temp.x = temp.x + 1;
+            mvprintw(temp.y, temp.x, "#");
+        }
+        // Go up
+        else if ((abs((temp.y - 1) - doorTwo->y) < abs((temp.y) - doorTwo->y)) && mvinch(temp.y - 1, temp.x) == ' ')
+        {
+            temp.y = temp.y - 1;
+            mvprintw(temp.y, temp.x, "#");
+        }
+        // Go down
+        else if ((abs((temp.y + 1) - doorTwo->y) < abs((temp.y) - doorTwo->y)) && mvinch(temp.y + 1, temp.x) == ' ')
+        {
+            temp.y = temp.y + 1;
+            mvprintw(temp.y, temp.x, "#");
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 int drawRoom(Room *room)
@@ -180,10 +244,10 @@ int drawRoom(Room *room)
     }
 
     // Draw Doors
-    mvprintw(room->doors[0].y, room->doors[0].x, "+");
-    mvprintw(room->doors[1].y, room->doors[1].x, "+");
-    mvprintw(room->doors[2].y, room->doors[2].x, "+");
-    mvprintw(room->doors[3].y, room->doors[3].x, "+");
+    mvprintw(room->doors[0]->y, room->doors[0]->x, "+");
+    mvprintw(room->doors[1]->y, room->doors[1]->x, "+");
+    mvprintw(room->doors[2]->y, room->doors[2]->x, "+");
+    mvprintw(room->doors[3]->y, room->doors[3]->x, "+");
 
     return 1;
 }
