@@ -129,7 +129,11 @@ Room **mapSetUp()
     rooms[2] = createRoom(10, 40, 6, 12);
     drawRoom(rooms[2]);
 
-    connectDoors(rooms[0]->doors[3], rooms[2]->doors[1]); // need to change
+    connectDoors(rooms[0]->doors[3], rooms[2]->doors[2]);
+
+    connectDoors(rooms[1]->doors[2], rooms[0]->doors[0]);
+
+    connectDoors(rooms[1]->doors[3], rooms[2]->doors[0]);
 
     return rooms;
 }
@@ -177,9 +181,13 @@ int connectDoors(Position *doorOne, Position *doorTwo)
     // 1. check if distance is smaller after moved
     // 2. check for valid position / empty char
     Position temp;
+    Position previous; // save previous position to backtrack
+    int count = 0;
 
     temp.x = doorOne->x;
     temp.y = doorOne->y;
+
+    previous = temp;
 
     // use while instead of for loop
     while (1)
@@ -191,31 +199,44 @@ int connectDoors(Position *doorOne, Position *doorTwo)
         // Go left, cur x - 1
         if ((abs((temp.x - 1) - doorTwo->x) < abs((temp.x) - doorTwo->x)) && mvinch(temp.y, temp.x - 1) == ' ')
         {
+            previous.x = temp.x;
             temp.x = temp.x - 1;
-            mvprintw(temp.y, temp.x, "#");
+            // mvprintw(temp.y, temp.x, "#");
         }
         // Go right
         else if ((abs((temp.x + 1) - doorTwo->x) < abs((temp.x) - doorTwo->x)) && mvinch(temp.y, temp.x + 1) == ' ')
         {
             temp.x = temp.x + 1;
-            mvprintw(temp.y, temp.x, "#");
+            // mvprintw(temp.y, temp.x, "#");
         }
         // Go up
         else if ((abs((temp.y - 1) - doorTwo->y) < abs((temp.y) - doorTwo->y)) && mvinch(temp.y - 1, temp.x) == ' ')
         {
             temp.y = temp.y - 1;
-            mvprintw(temp.y, temp.x, "#");
+            // mvprintw(temp.y, temp.x, "#");
         }
         // Go down
         else if ((abs((temp.y + 1) - doorTwo->y) < abs((temp.y) - doorTwo->y)) && mvinch(temp.y + 1, temp.x) == ' ')
         {
             temp.y = temp.y + 1;
-            mvprintw(temp.y, temp.x, "#");
+            // mvprintw(temp.y, temp.x, "#");
         }
         else
         {
-            return 0;
+            if (count == 0)
+            { // means we didn't take any step back yet
+                temp = previous;
+                count++;
+                continue; // skip to next round
+            }
+            else
+            {
+                return 0;
+            }
         }
+        mvprintw(temp.y, temp.x, "#");
+
+        // getch();
     }
     return 1;
 }
@@ -332,6 +353,8 @@ int checkPosition(int newY, int newX, Player *unit)
     switch (mvinch(newY, newX)) // mvinch
     {
     case '.':
+    case '#':
+    case '+':
         playerMove(newY, newX, unit);
         return 1;
         break;
